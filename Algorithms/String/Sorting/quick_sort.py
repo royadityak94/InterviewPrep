@@ -22,3 +22,4 @@ if __name__ == '__main__':
     arr = [12, 4, 11, 10, 18, 5, 6, 0]
     sorted_arr = QuickSort(arr).quickSort(0, len(arr)-1)
     print (sorted_arr)
+    
