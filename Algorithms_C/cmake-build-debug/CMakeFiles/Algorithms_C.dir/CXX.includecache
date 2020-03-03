@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/adity/Downloads/Courses/Interview/InterviewPrep/Algorithms_C/src/main/longest_subarray_with_k_characters.cpp
+longest_subarray_with_k_characters.h
+C:/Users/adity/Downloads/Courses/Interview/InterviewPrep/Algorithms_C/src/main/longest_subarray_with_k_characters.h
+iostream
+-
+
+C:/Users/adity/Downloads/Courses/Interview/InterviewPrep/Algorithms_C/src/main/longest_subarray_with_k_characters.h
+
