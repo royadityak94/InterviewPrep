@@ -1,0 +1,2 @@
+Before we get started, I should clarify a small point raised by yesterday's article. One issue I forgot to mention was that there are slight differences between running Haskell in ghci, the bytecode interpreter, and compiling it to native code with GHC.
+Haskell programs are executed by evaluating the special 'main' function.
