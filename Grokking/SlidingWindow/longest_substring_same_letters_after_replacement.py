@@ -11,6 +11,7 @@ def test(expected, output, msg=''):
         print ("Failed Test Case: %s" % msg)
 
 def length_of_longest_substring_with_replacement(input_str, k):
+    # Time Complexity: O(N), Space Complexity: O(26) ~ O(1) [Asymptotic equality]
     max_length = 0
     max_same_char_repeating_count = 0
     window_start = 0
