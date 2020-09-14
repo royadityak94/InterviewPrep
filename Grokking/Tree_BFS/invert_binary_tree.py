@@ -38,15 +38,15 @@ class BinaryTree:
         self.invert_binary_tree(root.left)
         self.invert_binary_tree(root.right)
 
-        # Swap left, right pointers
-        root.left, root.right = root.right, root.left
+        root.left, root.right = root.left, root.right
 
 def main():
     tree = BinaryTree(12)
     tree.root.left = Node(7)
     tree.root.right = Node(1)
-    tree.root.left.right = Node(8)
     tree.root.left.left = Node(9)
+    tree.root.left.right = Node(8)
+
     tree.root.right.left = Node(10)
     tree.root.right.right = Node(5)
     tree.root.left.left.left = Node(2)
