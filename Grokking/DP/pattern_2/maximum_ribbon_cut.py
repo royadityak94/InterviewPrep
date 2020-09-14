@@ -1,6 +1,7 @@
 # We are given a ribbon of length ‘n’ and a set of possible ribbon lengths. Now we need to cut the ribbon into the maximum number of pieces that comply with the above-mentioned possible lengths. Write a method that will return the count of pieces.
 
 def maximum_ribbon_cuts(arr, max_size):
+    # Time Complexity = Space Complexity = O(2^(len(arr)+max_size)
     if len(arr) == 0 or max_size == 0:
         return 0
     return maximum_ribbon_cuts_recursive(arr, max_size, 0)
@@ -20,6 +21,7 @@ def maximum_ribbon_cuts_recursive(arr, max_size, currentIndex):
     return max(with_current, without_current)
 
 def maximum_ribbon_cuts_dp(arr, max_size):
+    # Time Complexity = Space Complexity = O(len(arr)*max_size)
     if len(arr) == 0 or max_size == 0:
         return 0
     dp = [[float('-inf') for _ in range(max_size+1)] for _ in arr]
@@ -42,6 +44,7 @@ def maximum_ribbon_cuts_dp_recursion(dp, arr, max_size, currentIndex):
     return dp[currentIndex][max_size]
 
 def maximum_ribbon_cuts_bottomup_dp(arr, max_size):
+    # Time Complexity = Space Complexity = O(len(arr)*max_size)
     if len(arr) == 0 or max_size == 0:
         return 0
     dp = [[float('-inf') for _ in range(max_size+1)] for _ in arr]
