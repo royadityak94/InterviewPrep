@@ -12,7 +12,7 @@ class ListNode:
         self.next = None
     # Used by heap
     def __lt__(self, other):
-        return self.value < other.value
+        return self.value > other.value
 
 def merge_K_sorted_lists(lists):
     # Time Complexity: O(NLogK), Space Complexity: O(K)
