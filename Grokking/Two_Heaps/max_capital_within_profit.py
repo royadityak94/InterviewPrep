@@ -3,6 +3,7 @@
 from heapq import heappop, heappush
 
 def find_maximum_capital(capital, profits, numberOfProjects, initialCapital):
+    # Time Complexity: O(NLogN + KLogN), Space Complexity: O(N)
     # TODO: Write your code here
     # Two heaps - minHeap (capital), maxHeap(profit)
     minHeapCapital, maxHeapProfit = [], []
