@@ -13,24 +13,17 @@ class TreeNode(object):
 
     def traverse_level_order(self, root):
         # Time Complexity: O(N), Space Complexity: O(N)
-        queue = deque()
-        queue.append(root)
-        level_order_traversal = []
+        stack = deque()
+        current = root
+        while stack:
+            while current:
+                stack += current,
+                cucrent = current.left
+            node = stack.pop()
+            print (node.data)
+            node = node.right
 
-        while queue:
-            levelSize = len(queue)
-            currentLevel = []
-
-            for _ in range(levelSize):
-                currentNode = queue.popleft()
-                currentLevel.append(currentNode.data)
-
-                if currentNode.left:
-                    queue.append(currentNode.left)
-                if currentNode.right:
-                    queue.append(currentNode.right)
-            level_order_traversal.append(currentLevel)
-        return level_order_traversal
+        return []
 
 def main():
     tree = TreeNode(12)

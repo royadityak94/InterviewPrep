@@ -6,6 +6,7 @@
 custom_range = lambda *interval: range(interval[0], interval[1]+1)
 
 def merge(intervals_a, intervals_b):
+    # Time Complexity: O(N+M), Space Complexity: O(1); [N=len(intervals_a), M=len(intervals_b)]
     interval_intersection = []
     i = j = 0
     while (i < len(intervals_a) and (j < len(intervals_b))):
