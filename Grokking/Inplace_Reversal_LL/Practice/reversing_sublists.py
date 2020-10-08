@@ -1,4 +1,5 @@
 # Reversing sublist of a given linked list (in-place)
+#Given the head of a LinkedList and two positions ‘p’ and ‘q’, reverse the LinkedList from position ‘p’ to ‘q’
 from __future__ import print_function
 
 class Node:
@@ -13,22 +14,31 @@ class Node:
       temp = temp.next
     print()
 
-
 def reverse_sub_list(head, p, q):
-    # TODO: Write your code here
-    if p == q:
-        return head
+    tail = head
+    k = 0
+    prev = None
+    while k != p:
+        prev = head
+        head = head.next
+        k += 1
 
-    current, previous = head, None
-    i = 0
-    while current is not None and i < p - 1:
-        previous = current
-        current = current.next
-        i += 1
+    last_node_left = prev
+    first_node_right = head
 
+    while k != q:
+        next = head.next
+        head.next = prev
+        prev = head
+        head = next
+        k += 1
 
-
-    return head
+    if last_node_left:
+        last_node_left.next = prev
+    else:
+        tail = prev
+    first_node_right.next = head
+    return tail
 
 
 def main():
@@ -40,7 +50,7 @@ def main():
 
   print("Nodes of original LinkedList are: ", end='')
   head.print_list()
-  result = reverse_sub_list(head, 2, 4)
+  result = reverse_sub_list(head, 1, 4)
   print("Nodes of reversed LinkedList are: ", end='')
   result.print_list()
 

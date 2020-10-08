@@ -4,6 +4,7 @@ from heapq import heappush, heappop
 from collections import Counter
 
 def frequency_sort(str):
+    # Time Complexity: O(NLOGN), Space Complexity: O(N)
     charMap = Counter(str)
     occurrences = []
     for key in charMap.keys():

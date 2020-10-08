@@ -8,10 +8,10 @@ class Node(object):
         self.right = right
 
 class BinaryTree(object):
-    def __init__(self, data):
+    def __init__(self, data: int) -> None:
         self.root = Node(data)
 
-    def find_level_averages(self, root):
+    def find_level_averages(self, root: TreeNode) -> Boolean:
         # Time Complexity: O(N), Space Complexity : O(N),
         level_averages = []
 
