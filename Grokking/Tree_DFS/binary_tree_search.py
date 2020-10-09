@@ -13,7 +13,7 @@ class TreeNode:
         stack = [root]
 
         while stack:
-            node = stack.pop(-1)
+            node = stack.pop()
             if element == node.data:
                 return True
             elif element < node.data:
