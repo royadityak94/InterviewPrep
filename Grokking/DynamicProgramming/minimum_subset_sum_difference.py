@@ -1,7 +1,7 @@
 # Given a set of positive numbers, partition the set into two subsets with minimum difference between their subset sums.
 
-
 def can_partition(arr):
+    # Time Complexity: O(2^N), Space Complexity: O(N)
     return can_partition_recursive(arr, 0, 0, 0)
 
 def can_partition_recursive(arr, sum1, sum2, currentIndex):
@@ -12,6 +12,7 @@ def can_partition_recursive(arr, sum1, sum2, currentIndex):
     return min(diff1, diff2)
 
 def can_partition_td(arr):
+    # Time Complexity = Space Complexity: O(NS)
     if not len(arr):
         return 0
     S = sum(arr)
@@ -29,6 +30,7 @@ def can_partition_td_recursive(dp, arr, sum1, sum2, currentIndex):
     return dp[currentIndex][sum1]
 
 def can_partition_btmup(arr):
+    # Time Complexity = Space Complexity: O(NS)
     if not len(arr):
         return 0
     S = sum(arr) // 2
@@ -53,7 +55,7 @@ def can_partition_btmup(arr):
     sum1 = 0
     for i in range(S, -1, -1):
         if dp[len(arr)-1][i]:
-            sum1 = i
+            sum1 = ivcd
             break
     sum2 = sum(arr) - sum1
     return abs(sum1-sum2)
