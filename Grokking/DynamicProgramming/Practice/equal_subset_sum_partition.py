@@ -38,9 +38,9 @@ def can_partition_td_recursive(dp, arr, desired_sum, currentIndex):
 
     if not dp[currentIndex][desired_sum]:
         if arr[currentIndex] <= desired_sum:
-            if can_partition_recursive(arr, desired_sum-arr[currentIndex], currentIndex+1):
+            if can_partition_td_recursive(arr, desired_sum-arr[currentIndex], currentIndex+1):
                 dp[currentIndex][desired_sum] = True
-        return can_partition_recursive(arr, desired_sum, currentIndex+1)
+        return can_partition_td_recursive(arr, desired_sum, currentIndex+1)
     return dp[currentIndex][desired_sum]
 
 def can_partition_btmup(arr):
