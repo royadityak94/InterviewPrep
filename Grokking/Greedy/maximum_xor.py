@@ -1,7 +1,8 @@
 # Source: https://www.hackerrank.com/challenges/maximum-xor/problem
 from collections import defaultdict
 
-def maxXor(arr, queries):
+# Inefficient solution
+def maxXor_baseline(arr, queries):
     # solve here
     result = []
     cached = defaultdict(int)
@@ -17,24 +18,27 @@ def maxXor(arr, queries):
         result += observed_max,
     return result
 
-def maxXor22(arr, queries):
-    ans = []
+# Efficient soluion: using trie DS
+def maxXor(arr, queries):
     trie = {}
-    k = len(bin(max(arr+queries))) - 2
+    result = []
+    k = len(bin(max(arr+queries)))-2
     for number in ['{:b}'.format(x).zfill(k) for x in arr]:
         node = trie
-        for char in number:
-            node = node.setdefault(char, {})
-    for n in queries:
+        for ch in number:
+            node = node.setdefault(ch, {})
+
+    for q in queries:
         node = trie
-        s = ''
-        for char in'{:b}'.format(n).zfill(k) :
-            tmp = str(int(char) ^ 1)
-            tmp = tmp if tmp in node else char
-            s += tmp
+        formed_ = ''
+        for ch in '{:b}'.format(q).zfill(k):
+            tmp = str(int(ch)^1)
+            if tmp not in node:
+                tmp = ch
+            formed_ += tmp
             node = node[tmp]
-        ans.append(int(s, 2) ^ n)
-    return ans
+        result += int(formed_, 2)^q,
+    return result
 
 if __name__ == '__main__':
     print (maxXor([5, 1, 7, 4, 3], [2, 0]))
