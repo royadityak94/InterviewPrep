@@ -41,6 +41,7 @@ def main():
     print(search_rotated_array([10, 15, 1, 3, 8], 15))
     print(search_rotated_array([4, 5, 7, 9, 10, -1, 2], 10))
     print (search_rotated_array([3, 7, 3, 3, 3], 7))
+    print (search_rotated_array([72, 73, 0, 1, 21, 33, 37, 45, 61, 71], 72))
 
 
 main()
