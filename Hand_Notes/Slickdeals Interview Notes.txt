@@ -5,8 +5,16 @@ Slickdeals Interview Notes
 Quick Introduction: 
 ===============================
 
-Hello and Good Afternoon/Evening. It's a pleasure to introduce myself. My name is Aditya Roy, and I am currently enrolled in graduate Computer Science degree at UMass Amherst. At UMass, I have been part of several graduate semester-long research projects in Neural Networks, Deep Learning, Algorithms and Systems for ML design, NLP, and Computer Vision. In Spring '19 I collaborated with Federal Bureau of Investigations in Deep Video Analytics & with Oracle Labs on Fairness Ranking models. 
-Previously, I have worked in Full-Stack Data Science roles in four key consumer industries across three continents. I have an undergraduate degree in Electrical and Computer Engineering. And, finally my motivations for applying to this role is motivated by the scale of engineering, and impact-driven works of the company. I am optimistic in delivering result-oriented values in this role and augment the satisfaction of our customers. 
+Hello and Good Afternoon/Evening. It's a pleasure to introduce myself. My name is Aditya Roy, and 
+I am currently enrolled in graduate Computer Science degree at UMass Amherst. At UMass, I have been 
+part of several graduate semester-long research projects in Neural Networks, Deep Learning, Algorithms and 
+Systems for ML design, NLP, and Computer Vision. In Spring '19 I collaborated with 
+Federal Bureau of Investigations in Deep Video Analytics & with Oracle Labs on Fairness Ranking models. 
+Previously, I have worked in Full-Stack Data Science roles in four key consumer industries 
+across three continents. I have an undergraduate degree in Electrical and Computer Engineering. 
+And, finally my motivations for applying to this role is motivated by the scale of engineering, 
+and impact-driven works of the company. I am optimistic in delivering result-oriented values in 
+this role and augment the satisfaction of our customers. 
 
 
 Consumer Industries: Consumer Retail, Media & Entertainment, Healthcare and Logistic
@@ -17,13 +25,22 @@ Production: Exa (3), Eco(2), Elux(4)
 Quick Run - Planning weeks in advance:
 ===============================
 
-1) Strive to clarify meeting scopes and objectives - And, proactively inspect its fit into the larger scheme of things. 
+1) Strive to clarify meeting scopes and objectives - And, proactively inspect its fit 
+into the larger scheme of things. 
 2) Spend quality time in outling key action plans and important gains from the meeting. 
 3) Proactively foster communications and collaborations across business units and hierarchies. 
-4) Mastered the art of efficiently juggling across meetings: (A) Summarize the proceedings of the meeting towards the end, (B) Preparing wrapping-up at least 5-10 minutes in advance, (C) Courage to excuse yourself from one meeting to join the next. 
+4) Mastered the art of efficiently juggling across meetings: 
+	(A) Summarize the proceedings of the meeting towards the end, 
+	(B) Preparing wrapping-up at least 5-10 minutes in advance, 
+	(C) Courage to excuse yourself from one meeting to join the next. 
 
 ===============================
 Quick Run - Salary Negotiation:
 ===============================
 
-Firstly, I am extremely happy to meet my top priority of finding a fit in the position and the company. I am confident of driving values and delivering top-class results in this role. I am also thankful to the entire team and HR for investing their critical time and resources in my candidature. I am expecting to be compensated in the range of <>k - <>k annually, and that includes my investment in learning, skill-building, health and wellness. I am as well open to negotiation and valuable feedback on my expectations. 
+Firstly, I am extremely happy to meet my top priority of finding a fit in the position 
+and the company. I am confident of driving values and delivering top-class results in this role. 
+I am also thankful to the entire team and HR for investing their critical time and resources 
+in my candidature. I am expecting to be compensated in the range of <>k - <>k annually, and 
+that includes my investment in learning, skill-building, health and wellness. 
+I am as well open to negotiation and valuable feedback on my expectations. 
