@@ -7,6 +7,7 @@
 from unittest import TestCase, main
 
 def find_LPS_length(string):
+    # Time: O(3^N), Space: O(N)
     return find_LPS_length_recursive(string, 0, len(string)-1)
 
 def find_LPS_length_recursive(string, startIdx, endIdx):
@@ -27,6 +28,7 @@ def find_LPS_length_recursive(string, startIdx, endIdx):
     return max(c1, c2)
 
 def find_LPS_length_td(string):
+    # Time: O(N^2), Space: O(N^2 + N) ~ O(N)
     N = len(string)
     dp = [[-1 for _ in range(N)] for _ in range(N)]
     return find_LPS_length_td_recursive(dp, string, 0, N-1)
@@ -51,6 +53,7 @@ def find_LPS_length_td_recursive(dp, string, startIdx, endIdx):
     return dp[startIdx][endIdx]
 
 def find_LPS_length_btmup(string):
+    # Time: O(N^2), Space: O(N^2)
     N = len(string)
     dp = [[False for _ in range(N)] for _ in range(N)]
 
