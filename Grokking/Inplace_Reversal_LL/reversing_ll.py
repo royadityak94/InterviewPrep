@@ -16,7 +16,7 @@ class Node:
 def reverse(head):
     # Time Complexity: O(N), Space Complexity: O(1)
     prev = None
-    while head is not None:
+    while head:
       next = head.next
       head.next = prev
       prev, head = head, next

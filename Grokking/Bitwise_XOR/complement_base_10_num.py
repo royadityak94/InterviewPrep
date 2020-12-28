@@ -13,6 +13,9 @@ def calculate_bitwise_complement(num):
         n = n >> 1
         required_bits += 1
 
+    # Alternate way:
+    #required_bits = len('{:b}'.format(n))
+
     all_bits_set = (2**required_bits) - 1
     return num ^ all_bits_set
 
