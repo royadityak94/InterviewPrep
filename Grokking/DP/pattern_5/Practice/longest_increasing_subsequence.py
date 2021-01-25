@@ -1,62 +1,61 @@
 # Given a number sequence, find the length of its Longest Increasing Subsequence (LIS). In an increasing subsequence, all the elements are in increasing order (from lowest to highest).
 # [4,2,3,6,10,1,12] -> len({2,3,6,10,12}) = 5
 # [-4,10,3,7,15] -> len([-4, 3, 7, 15]) = 4
+# O(2^n) time | O(n) space
 
-def longest_increasing_subsequence(arr):
-    # Time Complexity: O(2^N), Space Complexity: O(N)
-    if not arr:
-        return 0
-    return longest_increasing_subsequence_recursive(arr, 0, -1)
+# O(2^n) time | O(n) space
+def lcs(nums):
+    return lcs_recursive(nums, 0, -1)
 
-def longest_increasing_subsequence_recursive(arr, currIndex, prevIndex):
-    if currIndex == len(arr):
+def lcs_recursive(nums, currentIdx, previousIdx):
+    if currentIdx == len(nums):
         return 0
-    count1 = 0
-    if prevIndex == -1 or arr[currIndex] > arr[prevIndex]:
-        count1 = 1 + longest_increasing_subsequence_recursive(arr, currIndex+1, currIndex)
-    count2 = longest_increasing_subsequence_recursive(arr, currIndex+1, prevIndex)
-    return max(count1, count2)
 
-def longest_increasing_subsequence_td(arr):
-    # Time Complexity: O(N^N), Space Complexity: O(N^N)
-    if not arr:
-        return 0
-    dp = [[0 for _ in range(len(arr))] for _ in range(len(arr))]
-    return longest_increasing_subsequence_td_recursive(dp, arr, 0, -1)
+    with_current = 0
+    if previousIdx == -1 or nums[currentIdx] > nums[previousIdx]:
+        with_current = 1 + lcs_recursive(nums, currentIdx+1, currentIdx)
+    without_current = lcs_recursive(nums, currentIdx+1, previousIdx)
+    return max(with_current, without_current)
 
-def longest_increasing_subsequence_td_recursive(dp, arr, currIndex, prevIndex):
-    if currIndex == len(arr):
-        return 0
-    if not dp[currIndex][prevIndex]:
-        count1 = 0
-        if prevIndex == -1 or arr[currIndex] > arr[prevIndex]:
-            count1 = 1 + longest_increasing_subsequence_recursive(arr, currIndex+1, currIndex)
-        count2 = longest_increasing_subsequence_recursive(arr, currIndex+1, prevIndex)
-        dp[currIndex][prevIndex] = max(count1, count2)
-    return dp[currIndex][prevIndex]
+# O(n^2) time | O(n^2 + n ~ n^2) space
+def lcs_td(nums):
+    dp = [[-1 for _ in range(len(nums))] for _ in range(len(nums))]
+    return lcs_td_recursive(dp, nums, 0, -1)
 
-def longest_increasing_subsequence_btmup(arr):
-    # Time Complexity: O(N^N), Space Complexity: O(N)
-    if not arr:
+def lcs_td_recursive(dp, nums, currentIdx, previousIdx):
+    if currentIdx == len(nums):
         return 0
-    dp = [0 for _ in arr]
+
+    if dp[currentIdx][previousIdx] == -1:
+        with_current = 0
+        if previousIdx == -1 or nums[currentIdx] > nums[previousIdx]:
+            with_current = 1 + lcs_td_recursive(dp, nums, currentIdx+1, currentIdx)
+        without_current = lcs_td_recursive(dp, nums, currentIdx+1, previousIdx)
+        dp[currentIdx][previousIdx] = max(with_current, without_current)
+    return dp[currentIdx][previousIdx]
+
+# O(n^2) time | O(n) space
+def lcs_btmup(nums):
+    dp = [1 for _ in range(len(nums))]
     dp[0] = 1
-    maxLength = 1
-    for i in range(1, len(arr)):
-        dp[i] = 1
+    maxLength = float('-inf')
+    for i in range(1, len(nums)):
         for j in range(i):
-            if arr[i] > arr[j] and dp[i] <= dp[j]:
-                dp[i] = dp[j]+1
-                maxLength = max(maxLength, dp[i])
+            if nums[i] > nums[j] and dp[i] <= dp[j]:
+                dp[i] = 1 + dp[j]
+            maxLength = max(maxLength, dp[i])
     return maxLength
+
 
 if __name__ == '__main__':
     # Using recursion
-    print (longest_increasing_subsequence([4,2,3,6,10,1,12]))
-    print (longest_increasing_subsequence([-4,10,3,7,15]))
+    print (lcs([4,2,3,6,10,1,12]))
+    print (lcs([-4,10,3,7,15]))
+    print ('---------------')
     # Using top-down DP
-    print (longest_increasing_subsequence_td([4,2,3,6,10,1,12]))
-    print (longest_increasing_subsequence_td([-4,10,3,7,15]))
+    print (lcs_td([4,2,3,6,10,1,12]))
+    print (lcs_td([-4,10,3,7,15]))
+    print ('---------------')
     # Using bottom-up DP
-    print (longest_increasing_subsequence_btmup([4,2,3,6,10,1,12]))
-    print (longest_increasing_subsequence_btmup([-4,10,3,7,15]))
+    print (lcs_btmup([4,2,3,6,10,1,12]))
+    print (lcs_btmup([-4,10,3,7,15]))

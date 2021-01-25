@@ -11,19 +11,33 @@ class TreeNode(object):
     def __init__(self, data):
         self.root = Node(data)
 
+    # def traverse_level_order(self, root):
+    #     # Time Complexity: O(N), Space Complexity: O(N)
+    #     stack = deque()
+    #     current = root
+    #     while stack:
+    #         while current:
+    #             stack += current,
+    #             cucrent = current.left
+    #         node = stack.pop()
+    #         print (node.data)
+    #         node = node.right
+
     def traverse_level_order(self, root):
         # Time Complexity: O(N), Space Complexity: O(N)
         stack = deque()
+        returned = []
         current = root
-        while stack:
-            while current:
+        while stack or current:
+            if current:
                 stack += current,
                 cucrent = current.left
-            node = stack.pop()
-            print (node.data)
-            node = node.right
-
-        return []
+            else:
+                node = stack.pop()
+                print (node.data)
+                returned += node.data,
+                cucrent = node.right
+        return returned
 
 def main():
     tree = TreeNode(12)
