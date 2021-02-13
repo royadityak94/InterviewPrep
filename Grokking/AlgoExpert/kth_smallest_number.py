@@ -53,6 +53,7 @@ def partition(arr, low, high):
     swap(low, high, arr)
     return low
 
+# O(N) time | O(N) space
 def kth_smallest_quickSelect(arr, k):
     return kth_smallest_quickSelect_recursive(arr, k, 0, len(arr)-1)
 

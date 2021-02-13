@@ -1,0 +1,277 @@
+This editor is synced in real time with your peer.
+
+Use it to share thoughts and resources, such as:
+- Features scope
+- API design
+- Pseudo code for specific components
+- Data model/schema
+- Back-of-the-envelope calculations
+- Reference links
+- Link to whiteboard or diagram such as https://sketchboard.me/new
+
+Good luck!
+
+Requirements:
+
+  Functional:
+    - search among a list of URLs
+    - generate a list of URLs, and do this continuously
+
+
+  Non-functional:
+    - highly available
+    - read-heavy
+    - consistent, reliable
+
+
+Reverse Index Engine (TF-IDF):
+  ["New England Baseball Scores"]: 0.2, [documentID1, site2.com]
+  site1.com => [tilte, snippet, documentID]
+
+
+
+Back of the envelope:
+  1 million DAU
+
+  10 searches / user = 10million searches/day = 10million*5kb = 50gb/day
+
+  50gb / (24*60*60) = .00057gb/s = 5.7mb/s
+
+  Writing 6 times a day: each time, 1 million writes
+  500 bytes/write * 1 million: .5gb * 6 = 3gb/day
+
+  3gb/day*30*12 = ~1Tb/year in storage, 10Tb/10years
+
+  - Storage: 10 Tb/ 10 years
+  - Latency: 100ms
+  - Bandwidth: 5.7 mb/s => 300/400 requests/second
+
+ URL - title of the site - some snippet - documentId
+
+ API:
+
+  POST post_document(url, title, snippet, keywords) -> writes to DB
+  GET get_document(url) -> document info
+
+  GET get_search_results(searchTerm) -> list of documents
+
+ DB Model:
+
+  Documents:
+    document_id : int : PK
+    url: varchar(512)
+    title: varchar(50)
+    snippet: varchar(100)
+
+  Keywords:
+    document_id : int : FK
+    keyword: varchar(30) : PK
+
+
+
+
+
+Sample Request:
+  curl https://search.com/api/v1/search?query=hello+world
+Sample Response:
+  {
+    "title": "foo's title",
+    "snippet": "foo's snippet",
+    "link": "https://foo.com",
+},
+{
+    "title": "bar's title",
+    "snippet": "bar's snippet",
+    "link": "https://bar.com",
+},
+
+
+ SELECT * FROM DB_CLUSTERS WHERE DISTANCE_SIMILARITY_FnC(InputString) < 0.5
+
+
+
+
+ ffmaer@gmail.com
+
+
+
+ This editor is synced in real time with your peer.
+
+Use it to share thoughts and resources, such as:
+- Features scope
+- API design
+- Pseudo code for specific components
+- Data model/schema
+- Back-of-the-envelope calculations
+- Reference links
+- Link to whiteboard or diagram such as https://sketchboard.me/new
+
+Good luck!
+
+
+
+Section 1 (Assumptions):
+  1. Scoping:
+    o. See other tweets (from my connection)
+    o. Search for tweets across entire platform
+    o. Messaging users -> message log system
+
+  2. Out-of-scope:
+    o. Advanced Recommendation -> for tweets => Descriptive scoring for timeline views
+    o. Security Engineering
+
+  3. System Properties:
+    o. Highly Available System
+    o. Tradeoffing Consistency -> social-media platform to be highly consistent (expect stale contents)
+
+
+
+Section 2 (Constraints):
+  1. Traffic is not evenly distributed: (regions do not behave the system) i.e. ((LA, NYC, Seattle, Austin) > (Boulders, Dallas, Sacremento))
+  2. Chat & Posting messages should have low latency: sub 100 ms latency
+  3. Throughput:
+    Pop. of US - 300M
+    Active Users: 150M
+    Avg Post: 2/day
+    Avg Chat: 25 messages/day
+
+    Post: 300M/day ~ 300M/(24*3600) / sec ~ 3500 requests/sec
+    Messages: 42000 requests/sec
+   Avg Post Sizes: ~500 B = 175 MB/sec
+   Avg. Message Size: 2200 MB/sec
+
+ 4. Storage:
+  Post Size: 300M tweets/day * 30/month = 9 GB tweets/month ~ 108 GB tweets/year * 2000 B ~ 2000 GB/year ~ 2 PB/year
+  Message Size: 24 PB/year
+  Avg Data: 26 PB/year * 5 years ~ 131 PB (hot-storage)
+
+5. Search:
+    Active Users: 150M
+    Avg. User Searches per day: 10
+    Total Searches: 1500M/day ~ 5000 searches/second
+
+    Cache Size: 2000 searches/sec ~ 300 M/day
+
+
+
+
+Section 3 (high level system design):
+------------
+
+
+
+Section 4 (API Design):
+------------
+   TweeetAPI (message: str, location: gps_coordinates, ts: timestamp)
+   SearchAPI (query: str)
+   FeedAPI (userId: string/UserID, offset: timestamp)
+   MessageAPI(message: string, sender: UserID, receiver: UserID)
+   MessageAPIBackground(userId1: UserID, userId2: UserID) -> chatlogs (datastore)
+
+
+
+
+------------------------------------
+
+
+This editor is synced in real time with your peer.
+
+Use it to share thoughts and resources, such as:
+- Features scope
+- API design
+- Pseudo code for specific components
+- Data model/schema
+- Back-of-the-envelope calculations
+- Reference links
+- Link to whiteboard or diagram such as https://sketchboard.me/new
+
+Good luck!
+
+clients
+
+server
+
+database
+
+
+Avg Logs/second: 10,000 searches/second
+query: string < 140 characters
+results: 100 pages, 10 results/page,
+assume: top 10 results for each query
+result:
+  title of the page: string < 140 characters
+  description of the result: 140 characters
+
+each query is matched with 10 result snippets
+
+10k per sec, 60 sec/min, 60 min/hr, 24hr/day, 365days/year
+
+in-memory (Node, JavaScript dictionary)
+{
+  key1:{},
+  key2:{},
+  key3:{}
+}
+Key-Value Cache Server (Node app)
+
+what's the number of unique keys per month?
+10k * 60 * 60 * 24 * 30 * 0.8 = 25,920,000,000 * 0.8 = 20,736,000,000 keys per month (Cache Miss: 80%, Cache Hit: 20%)
+21 billion new keys per month!
+restaurant, restaurants, resttrant --> restaurant
+where can I get food
+where is the closest restaurant
+what's good for food today
+
+key=70 characters, 2 bytes/char, 140bytes/key
+140bytes * 21billion keys per month = 2940 billion bytes per month just for the key size
+byte ---> petabyte
+kilo 3
+mega 6
+giga 9
+tita 12
+peta 15
+2940 billion (10^9) bytes --->  2940 GB for keys
+
+10 results/key
+result: {
+  title: 70 char
+  description: 140 char
+}
+1 result = 3 times the size of a key
+10 results for each key
+a snapshot of 10 results 30 times of the size of a key
+
+key-value
+key=size of query
+value=10results
+1 result = 1 title + 1 description
+10 results = 10 title + 10 description
+1 description = 2 times the size of a key
+1 title = 1 time the size of a key
+key-value record is 31 times the size of a query
+the size of new queries per month is 2940 GB
+the size of a key-value pairs per month is 31*2940 GB
+
+cache size for a month's new keys: 31 * 2940 GB (impossible to be in the memory at the time)
+assume each machine can have 31 GB memory
+
+2940 machines!
+separate the queries into 2940 machines by alphabet
+26 a-z
+26*26=676  aa-zz
+
+{restants:{
+  result1:{},
+  result2:{},
+  result3:{}
+}}
+
+- requirement & goals
+
+- storage & throughput
+
+- system APIs
+
+- high level design
+
+- database schema
