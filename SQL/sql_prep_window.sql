@@ -47,7 +47,7 @@ SELECT
 FROM cats
 ORDER BY breed, name
 
-`Problem: Examining nearby rows
+`Problem: Examining nearby rows*
 Task: The cats would like to see the average of the weight of them, the cat just after them and the cat just before them. The first and last cats are content to have an average weight of consisting of 2 cats not 3.
 `
 SELECT
@@ -174,7 +174,7 @@ select
 FROM cats
 ORDER BY weight
 
-`Problem: Grouping (Adv.)
+`Problem: Grouping (Adv.)*
 Task: The cats want to show their weight by breed. The cats agree that they should show the second lightest cat's weight. Print a list of breeds, and the second lightest weight of that breed
 `
 SELECT
