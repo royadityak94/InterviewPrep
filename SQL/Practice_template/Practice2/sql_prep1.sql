@@ -15,27 +15,7 @@ Table Name: logins (userID, date)
 | 234     | 2018-10-04 |
 ------------------------
 
-WITH monthly_active_users AS (
-  SELECT
-    DATE_TRUNC('month', date) AS month_ts,
-    COUNT(DISTINCT userID) AS active_users
-  FROM
-    logins
-  GROUP BY
-    DATE_TRUNC('month', date)
-)
-SELECT
-  current.month_ts current_month,
-  current.active_users current_active_users,
-  previous.month_ts previous_month,
-  previous.active_users previous_active_users,
-  ROUND(((current.active_users - previous.active_users)/current.active_users)*100.0, 2) AS percentage_change
-FROM
-  monthly_active_users current
-  JOIN
-  monthly_active_users previous
-WHERE
-  current.month_ts = previous.month_ts + INTERVAL '1 months'
+
 
 ------------------------
 Problem #2 (Tree Structure Labeling )
@@ -58,46 +38,10 @@ Problem #2 (Tree Structure Labeling )
 
 Solution: 1
 ------
-with tree_labels AS (
-  SELECT
-    parent.node node,
-    parent.parent parent,
-    COUNT(children.node) AS children
-  FROM
-    tree parent
-    JOIN
-    tree children
-    ON (
-      parent.node = children.parent
-    )
-  GROUP BY
-    parent.node,
-    parent.parent
-)
-
-SELECT
-  node,
-  CASE
-    WHEN parent IS NULL THEN 'Root'
-    WHEN children = 0 THEN 'Leaf'
-    ELSE 'Inner'
-  END AS label
-FROM
-  tree_labels
 
 Solution: 2
 ------
 
-SELECT
-  node,
-  CASE
-    WHEN parent IS NULL THEN 'Root'
-    WHEN node NOT IN
-      (SELECT parent FROM tree WHERE parent IS NOT NULL) THEN 'Leaf'
-    WHEN node IN (SELECT parent FROM tree) THEN 'Inner'
-  END AS lable
-FROM
-  tree
 
 ------------------------
 Problem #3 (Retained Users Per Month) -> logins
@@ -120,65 +64,14 @@ Problem #3 (Retained Users Per Month) -> logins
 Solution: Task 1
 -------
 
-WITH DistinctMonthlyUsers AS (
-  SELECT DISTINCT
-    user_id,
-    DATE_TRUNC('month', a.date) AS month_ts
-  FROM
-    logins
-)
 
-SELECT
-  current.month_ts AS month_timestamp,
-  COUNT(previous.user_id) AS retained_user_count
-FROM
-  DistinctMonthlyUsers current
-  LEFT JOIN
-  DistinctMonthlyUsers previous
-  ON
-    current.month_ts = previous.month_ts + INTERVAL '1 month'
-    AND
-    current.user_id = previous.user_id
-GROUP BY
-  current.month_ts
 
 Solution: Task 2
 -------
-SELECT
-  DATE_TRUNC('month', current.date) AS month_ts,
-  COUNT(DISTINCT previous.user_id) churned_users
-FROM
-  logins current
-FULL OUTER JOIN
-  logins previous
-ON
-  current.user_id = previous.user_id
-  AND
-  DATE_TRUNC('month', current.data) = DATE_TRUNC('month', previous.data) + INTERVAL '1 month'
-WHERE
-  current.user_id IS NULL
-GROUP BY
-  DATE_TRUNC('month', current.date)
+
 
 Solution: Task 3
 -------
-
-SELECT
-  DATE_TRUNC('month', current.date) AS month_ts,
-  COUNT(DISTINCT current.user_id) reactivated_users,
-  MAX(DATE_TRUNC('month', previous.date)) AS most_recent_active_previously
-FROM
-  logins current
-FULL OUTER JOIN
-  logins previous
-ON
-  current.user_id = previous.user_id
-  AND
-  DATE_TRUNC('month', current.data) > DATE_TRUNC('month', previous.data)
-GROUP BY
-  DATE_TRUNC('month', current.date)
-HAVING
-  month_ts > most_recent_active_previously + INTERVAL '1 month'
 
 
 ------------------------
@@ -199,13 +92,6 @@ Problem #4 (Cumulative Sums)
       | ...        | ...           |
 ------------------------
 
-SELECT
-  date,
-  SUM(cash_flow) OVER(Order by date ASC) AS cumulative_cf
-FROM
-  transactions
-ORDER BY
-  date ASC
 
 ------------------------
 Problem #5 (Rolling Averages )
@@ -219,13 +105,10 @@ Problem #5 (Rolling Averages )
         | 2018-10-01 | 35       |
 
   Task: Write a query to get 7-day rolling (preceding) average of daily sign up
+  O/p: date | avg_7_days_signups
 ------------------------
 
-SELECT
-  date,
-  AVG(sign_ups) OVER(ORDER BY date ROWS BETWEEN 6 PRECEEDING AND 0 PRECEEDING) AS avg_7_days_signups
-FROM
-  signups
+
 
 ------------------------
 Problem #6 (Multiple Join Conditions )
@@ -246,25 +129,7 @@ Problem #6 (Multiple Join Conditions )
   Keep in mind a thread may have multiple responses back-and-forth between zach@g.com and another email address.
 ------------------------
 
-SELECT
-  sender.id,
-  MIN(recipient.timestamp) - sender.timestamp AS time_to_respond\
-FROM
-  emails sender
-  JOIN
-  emails recipient
-  ON
-    sender.subject = recipient.subject
-    AND
-    sender.to = recipient.from
-    AND
-    sender.from = recipient.to
-    AND
-    sender.timestamp < recipient.timestamp
-WHERE
-  sender.to = 'zach@g.com'
-GROUP BY
-  sender.id
+
 ------------------------
 Problem # (Get the ID with the highest value in `salaries `)
       depname  | empno | salary |
@@ -275,41 +140,20 @@ Problem # (Get the ID with the highest value in `salaries `)
   Task: Write a query to get the empno with the highest salary. Make sure your solution can handle ties!
 ------------------------
 
-WITH salary_rank AS (
-  SELECT
-    empno,
-    RANK() OVER(ORDER BY salary DESC) rnk
-  FROM
-    salaries
-)
-SELECT
-  empno
-FROM
-  salary_rank
-WHERE
-  rnk = 1;
+
 
 ------------------------
 Problem # (Average and rank with a window function)
   Task: Write a query that returns the same table, but with a new column that has average salary per depname. We would expect a table in the form:
 ------------------------
 
-SELECT
-  *,
-  ROUND(AVG(salary), 0) OVER (Partition BY depName) AS avg_salary
-FROM
-  salaries
 
 ------------------------
 Problem # ()
   Task: Write a query that adds a column with the rank of each employee based on their salary within their department, where the employee with the highest salary gets the rank of 1. We would expect a table in the form:
 ------------------------
 
-SELECT
-  *,
-  RANK() OVER(PARTITION BY depname ORDER BY salary DESC) AS salary_rank
-FROM
-  salaries
+
 
 ------------------------
 Problem # (Histograms )
@@ -327,21 +171,7 @@ Problem # (Histograms )
           | 450-455 | 1     |
 ------------------------
 
-WITH historgram AS (
-  SELECT
-    session_id,
-    FLOOR(length_seconds/5) AS bin_start
-  FROM
-    sessions
-)
 
-SELECT
-  CONCATENATE(str(bin_start*5), '-', str(bin_start*5+5)) AS bucket,
-  COUNT(DISTINCT session_id) AS count
-FROM
-  historgram
-ORDER BY
-  bucket ASC
 
 ------------------------
 Problem # (CROSS JOIN (multi-part))
@@ -367,32 +197,12 @@ Problem # (CROSS JOIN (multi-part))
 Solution: Task 1
 -------
 
-SELECT
-  current.state AS state_a,
-  previous.state AS state_b
-FROM
-  state_streams current
-  CROSS JOIN
-  state_streams previous
-WHERE
-  ABS(current.total_streams - previous.total_streams) < 1000
-  AND
-  current.state <> previous.state
+
 
   Solution: Task 2
   -------
 
-  SELECT
-    current.state AS state_a,
-    previous.state AS state_b
-  FROM
-    state_streams current
-    CROSS JOIN
-    state_streams previous
-  WHERE
-    ABS(current.total_streams - previous.total_streams) < 1000
-    AND
-    current.state > previous.state
+
 
 ------------------------
 Problem # (Advancing Counting )
@@ -410,19 +220,3 @@ Problem # (Advancing Counting )
           | a     | 1     |
           | b     | 2     |
 ------------------------
-
-WITH formatting AS (
-  SELECT
-    user,
-    MAX(class) AS class
-  FROM
-    table
-)
-
-SELECT
-  class,
-  COUNT(user)
-FROM
-  formatting
-ORDER BY
-  class
