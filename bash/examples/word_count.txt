@@ -1,2 +1,5 @@
 the day is sunny the the
 the sunny is is
+write a bash script to calculate the frequency of each word in a text file
+words are separated by one or more whitespace characters
+each word must consist of lowercase characters only

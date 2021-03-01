@@ -9,7 +9,7 @@ awk '{
   }
 }
 END {
-  for (i in s){
+  for (i=1; s[i] != ""; i++) {
     print s[i];
   }
-}' file.txt
+}' 'examples/transpose_file.txt'

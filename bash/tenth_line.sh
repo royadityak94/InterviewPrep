@@ -1,5 +1,5 @@
-#!/bin/bash
-FILE_NAME="examples/tenth_line.txt"
+#!/bin/sh
+FILE_NAME='examples/tenth_line.txt'
 # cnt = 0
 # while read line && [ $cnt -le 10]; do
 #   let 'cnt = cnt + 1'
@@ -8,4 +8,4 @@ FILE_NAME="examples/tenth_line.txt"
 #     exit 0
 #   fi
 # done < $FILE_NAME
-sed -ne 10p < $FILE_NAME
+sed -ne '10p' $FILE_NAME
