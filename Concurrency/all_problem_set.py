@@ -286,17 +286,108 @@ class ZeroEvenOdd:
             self.semaphores[0].release()
 
 '''
-    Problem:
+    Problem: Building H2O
+    There are two kinds of threads, oxygen and hydrogen. Your goal is to group these threads to form water molecules. There is a barrier where each thread has to wait until a complete molecule can be formed. Hydrogen and oxygen threads will be given releaseHydrogen and releaseOxygen methods respectively, which will allow them to pass the barrier. In other words:
+        - If an oxygen thread arrives at the barrier when no hydrogen threads are present, it has to wait for two hydrogen threads.
+        - If a hydrogen thread arrives at the barrier when no other threads are present, it has to wait for an oxygen thread and another hydrogen thread.
 '''
+from threading import Barrier, Semaphore
+class H20:
+    def __init__(self):
+        self.barrier = Barrier(3)
+        self.semaphores = (Semaphore(2), Semaphore(1))
+
+    def hydrogen(self, releaseHydrogen: 'Callable[[], None]') -> None:
+        with self.semaphores[0]:
+            self.barrier.wait()
+            releaseHydrogen()
+
+    def oxygen(self, releaseOxygen: 'Callable[[], None]') -> None:
+        with self.semaphores[1]:
+            self.barrier.wait()
+            releaseOxygen()
+'''
+    Problem: The Dining Philosophers
+    Five silent philosophers sit at a round table with bowls of spaghetti. Forks are placed between each pair of adjacent philosophers. Each philosopher must alternately think and eat. However, a philosopher can only eat spaghetti when they have both left and right forks. Each fork can be held by only one philosopher and so a philosopher can use the fork only if it is not being used by another philosopher.
+    Design a discipline of behaviour (a concurrent algorithm) such that no philosopher will starve; i.e., each can forever continue to alternate between eating and thinking, assuming that no philosopher can know when others may want to eat or think.
+    Five threads, each representing a philosopher, will simultaneously use one object of your class to simulate the process. The function may be called for the same philosopher more than once, even before the last call ends.
+'''
+from threading import Semaphore
+class DiningPhilosophers:
+    def __init__(self, n=5):
+        self.n = n
+        self.semaphores = [Semaphore() for _ in range(self.n)]
+
+    def wantsToEat(self,
+       philosopher: int,
+       pickLeftFork: 'Callable[[], None]',
+       pickRightFork: 'Callable[[], None]',
+       eat: 'Callable[[], None]',
+       putLeftFork: 'Callable[[], None]',
+       putRightFork: 'Callable[[], None]') -> None:
+       return self.wantsToEatHelper(philosopher, pickLeftFork, pickRightFork, eat, putLeftFork, putRightFork)
+
+   def wantsToEatHelper(self, index, *actions):
+       left, right = index, (index+1) % self.n
+       if index % self.n: # Swap if full circle is reached
+           left, right = right, left
+       with self.semaphores[left], self.semaphores[right]:
+           for action in actions:
+               action()
 
 '''
-    Problem:
+    Problem: Fizz Buzz Multithreaded
+    Implement a multithreaded version of FizzBuzz with four threads. The same instance of FizzBuzz will be passed to four different threads:
+        Thread A will call fizz() to check for divisibility of 3 and outputs fizz.
+        Thread B will call buzz() to check for divisibility of 5 and outputs buzz.
+        Thread C will call fizzbuzz() to check for divisibility of 3 and 5 and outputs fizzbuzz.
+        Thread D will call number() which should only output the numbers.
 '''
+from threading import Semaphore
+class FizzBuzz:
+    def __init__(self, n:int):
+        self.n = n
+        self.semaphore = [Semaphore(0) for _ in range(4)] # [num, div_3, div_5, div_15]
+        self.semaphore[0].release()
 
-'''
-    Problem:
-'''
+    def fizz(self, printFizz: 'Callable[[], None]') -> None:
+        # Below 2 lines could be replaced by:
+        # for i in range (self.n//3 - self.n // 15)
+        for i in range(3, self.n+1, 3):
+            if i % 5:
+                self.semaphore[1].acquire()
+                printFizz()
+                self.semaphore[0].release()
 
+    def buzz(self, printBuzz: 'Callable[[], None]') -> None:
+        # Below 2 lines could be replaced by:
+        # for i in range (self.n//5 - self.n // 15)
+        for i in range(5, self.n+1, 5):
+            if i % 3:
+                self.semaphore[2].acquire()
+                printFizz()
+                self.semaphore[0].release()
+
+    def fizzbuzz(self, printFizzBuzz: 'Callable[[], None]') -> None:
+        # Below 2 lines could be replaced by:
+        # for i in range (self.n // 15)
+        for i in range(15, self.n+1, 15):
+            self.semaphore[3].acquire()
+            printFizz()
+            self.semaphore[0].release()
+
+    def number(self, printNumber: 'Callable[[int], None]') -> None:
+        for i in range(1, self.n+1):
+            self.semaphore[0].acquire()
+            if not i % 15:
+                self.semaphore[3].release()
+            elif not i % 3:
+                self.semaphore[1].release()
+            elif not i % 5:
+                self.semaphore[2].release()
+            else:
+                printNumber(i)
+                self.semaphore[0].release()
 
 '''
     Problem:
