@@ -390,33 +390,96 @@ class FizzBuzz:
                 self.semaphore[0].release()
 
 '''
+    Problem: Design Bounded Blocking Queue
+    Implement a thread safe bounded blocking queue that has the following methods:
+        BoundedBlockingQueue(int capacity) The constructor initializes the queue with a maximum capacity.
+        void enqueue(int element) Adds an element to the front of the queue. If the queue is full, the calling thread is blocked until the queue is no longer full.
+        int dequeue() Returns the element at the rear of the queue and removes it. If the queue is empty, the calling thread is blocked until the queue is no longer empty.
+        int size() Returns the number of elements currently in the queue.
+'''
+from threading import Semaphore
+from collections import deque
+class BoundedBlockingQueue:
+    def __init__(self, capacity: int):
+        self.enque = Semaphore(capacity)
+        self.deque = Semaphore(0)
+        self.editLock = Semaphore()
+        self.queue = deque()
+
+    def enqueue(self, element:int) -> None:
+        self.enque.acquire()
+        with self.editLock:
+            self.queue += element,
+        self.deque.release()
+
+    def dequeue(self) -> int:
+        popped = None
+        self.deque.acquire()
+        with self.editLock:
+            popped = self.queue.popleft()
+        self.enqueue.release()
+        return popped
+
+    def size(self) -> int:
+        return len(self.queue)
+
+'''
     Problem:
 '''
 
+from threading import Lock, Thread
+from queue import Queue
 
-'''
-    Problem:
-'''
+class Solution:
+    def crawl(self, startUrl: str, htmlParser: 'HtmlParser') -> List[str]:
+        hostname = lambda url: url.split('/')[2]
+
+        queue = Queue()
+        seen = {startUrl}
+        parent = hostname(startUrl)
+        seen_lock = Lock()
+        queue.put(startUrl)
+
+        def worker():
+            while True:
+                url = queue.get()
+                for next_url in htmlParser.getUrls(url):
+                    if next_url not in seen and hostname(next_url) == parent:
+                        with seen_lock:
+                            seen.add(next_url)
+                            queue.put(next_url)
+                queue.task_done()
+
+        num_workers = 10
+        workers = []
+        queue.put(startUrl)
+        for i in range(num_workers):
+            t = Thread(target=worker)
+            t.start()
+            workers += t,
+
+        # Wait until empty
+        queue.join()
+
+        for i in range(num_workers):
+            queue.put(None)
+        for t in workers:
+            t.join()
+        return list(seen)
 
 
-'''
-    Problem:
-'''
+# Advanced Implementation using concurrent futures
+from concurrent import futures
+class Solution:
+    def crawl(self, startUrl: str, htmlParser: 'HtmlParser') -> List[str]:
+        hostname = lambda url: url.split('/')[2]
+        seen = {startUrl}
 
-'''
-    Problem:
-'''
-
-'''
-    Problem:
-'''
-'''
-    Problem:
-'''
-
-'''
-    Problem:
-'''
-'''
-    Problem:
-'''
+        with futures.ThreadPoolExecutor(max_workers=16) as executor:
+            tasks = deque([executor.submit(htmlParser.getUrls, startUrl)])
+            while tasks:
+                for url in tasks.popleft().result():
+                    if url not in seen and hostname(url) == hostname(startUrl):
+                        seen.add(url)
+                        tasks += executor.submit(htmlParser.getUrls, url)
+        return list(seen)
