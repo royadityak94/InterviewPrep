@@ -3,35 +3,36 @@ Given an array of integers heights representing the histogram's bar height where
 '''
 from typing import List
 
-# O(m^2) time | O(1) space
 def largestRectangleArea_naive(heights: List[int]) -> int:
-    maxArea = 0
+    if not heights:
+        return 0
     m = len(heights)
+    maxArea = float('-inf')
 
     for i in range(m):
         minHeight = float('inf')
         for j in range(i, m):
             minHeight = min(minHeight, heights[j])
-            maxArea = max(maxArea, minHeight*(j-i+1))
+            maxArea = max(maxArea, minHeight * (j-i+1))
     return maxArea
 
-# O(m) time | O(m) space
 def largestRectangleArea(heights: List[int]) -> int:
-    maxArea = 0
+    if not heights:
+        return 0
     m = len(heights)
+    maxArea = float('-inf')
     stack = [-1]
-
     for i in range(m):
-        while stack[-1] != -1 and heights[stack[-1]] >= heights[i]:
-            currentHeight = heights[stack.pop()]
-            currentWidth = i - stack[-1] - 1
-            maxArea = max(maxArea, currentWidth * currentHeight)
+        while stack[-1] != -1 and heights[stack[-1]] > heights[i]:
+            currHeight = heights[stack.pop()]
+            currWidth = i - stack[-1] - 1
+            maxArea = max(maxArea, currHeight * currWidth)
         stack += i,
 
     while stack[-1] != -1:
-        currentHeight = heights[stack.pop()]
-        currentWidth = m - stack[-1] - 1
-        maxArea = max(maxArea, currentWidth * currentHeight)
+         currHeight = heights[stack.pop()]
+         currWidth = m - stack[-1] - 1
+         maxArea = max(maxArea, currHeight * currWidth)
     return maxArea
 
 if __name__ == '__main__':
