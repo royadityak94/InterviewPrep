@@ -14,14 +14,13 @@ def two_missing_numbers_in_pattern(arr):
     # Finding the rightmost set bit
     rightmost_set_bit = 1
     while (rightmost_set_bit & num1_xor_num2) == 0:
-        print ("Righmost val = ", rightmost_set_bit)
         rightmost_set_bit = rightmost_set_bit << 1
 
     # Finding the two numbers: num1, num2
     num1 = num2 = 0
 
     for num in arr:
-        if rightmost_set_bit & num != 0:
+        if rightmost_set_bit & num:
             num1 ^= num
         else:
             num2 ^= num
