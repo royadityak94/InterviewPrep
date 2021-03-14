@@ -16,7 +16,7 @@ columns = ["firstname","lastname","country","state"]
 sparkDf = spark.createDataFrame(data=data, schema=columns)
 sparkDf.select('firstname', 'lastname').show()
 sparkDf.select(col('firstname'), col('lastname')).show()
-
+m
 from pyspark.sql.types import StructType,StructField, StringType
 data = [
         (("James",None,"Smith"),"OH","M"),
