@@ -196,33 +196,504 @@ SELECT
     student
 FROM seat;
 
+`Problem: Apples & Oranges
+Task: Write an SQL query to report the difference between number of apples and oranges sold each day. Return the result table ordered by sale_date in format ('YYYY-MM-DD').
+Sales table:
++------------+------------+-------------+
+| sale_date  | fruit      | sold_num    |
++------------+------------+-------------+
+| 2020-05-01 | apples     | 10          |
+| 2020-05-01 | oranges    | 8           |
+| 2020-05-02 | apples     | 15          |
+| 2020-05-02 | oranges    | 15          |
+| 2020-05-03 | apples     | 20          |
+| 2020-05-03 | oranges    | 0           |
+| 2020-05-04 | apples     | 15          |
+| 2020-05-04 | oranges    | 16          |
++------------+------------+-------------+
+Result table:
++------------+--------------+
+| sale_date  | diff         |
++------------+--------------+
+| 2020-05-01 | 2            |
+| 2020-05-02 | 0            |
+| 2020-05-03 | 20           |
+| 2020-05-04 | -1           |
++------------+--------------+
+`
+-- Option - 1
+SELECT
+  sale_date,
+  SUM(CASE WHEN fruit='apples' THEN sold_num ELSE -sold_num END) diff
+FROM
+  Sales
+GROUP BY sale_date
+ORDER BY sale_date;
+
+-- Option - 2 {Slow: 2x}
+with apple_sale AS (
+  SELECT sale_date, sold_num
+  FROM Sales
+  WHERE fruit = 'apples'
+),
+orange_sale AS (
+  SELECT sale_date, sold_num
+  FROM Sales
+  WHERE fruit = 'oranges'
+)
+SELECT
+  a.sale_date,
+  (a.sold_num - o.sold_num) diff
+FROM
+  apple_sale a
+  INNER JOIN
+  orange_sale o
+  USING (sale_date)
+ORDER BY
+  sale_date
+;
+
+`Problem: Grand Slam Titles
+Task: Write an SQL query to report the number of grand slam tournaments won by each player. Do not include the players who did not win any tournament. Return the result table in any order.
+Players table:
++-----------+-------------+
+| player_id | player_name |
++-----------+-------------+
+| 1         | Nadal       |
+| 2         | Federer     |
+| 3         | Novak       |
++-----------+-------------+
+Championships table:
++------+-----------+---------+---------+---------+
+| year | Wimbledon | Fr_open | US_open | Au_open |
++------+-----------+---------+---------+---------+
+| 2018 | 1         | 1       | 1       | 1       |
+| 2019 | 1         | 1       | 2       | 2       |
+| 2020 | 2         | 1       | 2       | 2       |
++------+-----------+---------+---------+---------+
+Result table:
++-----------+-------------+-------------------+
+| player_id | player_name | grand_slams_count |
++-----------+-------------+-------------------+
+| 2         | Federer     | 5                 |
+| 1         | Nadal       | 7                 |
++-----------+-------------+-------------------+
+`
+-- Approach 1 (Faster - Using Cross Join)
+WITH cross_joined AS (
+  SELECT
+    player_id,
+    player_name,
+    SUM(
+      IF(Wimbledon = player_id, 1, 0)
+      + IF(Fr_open = player_id, 1, 0)
+      + IF(US_open = player_id, 1, 0)
+      + IF(Au_open = player_id, 1, 0)
+    ) grand_slams_count
+  FROM
+    Players p
+  CROSS JOIN
+    Championships c
+  GROUP BY
+    player_id
+)
+SELECT
+  *
+FROM
+  cross_joined
+WHERE
+  grand_slams_count > 0 -- Filtering out those who haven't won any contest
+;
+
+-- Approach 2 (Slower - Using Flattening)
+WITH flattened_scores AS (
+  SELECT Wimbledon player_id FROM Championships
+  UNION ALL
+  SELECT Fr_open player_id FROM Championships
+  UNION ALL
+  SELECT US_open player_id FROM Championships
+  UNION ALL
+  SELECT Au_open player_id FROM Championships
+)
+SELECT
+  p.player_id,
+  p.player_name,
+  COUNT(*) grand_slams_count
+FROM
+  Players p
+  INNER JOIN
+  flattened_scores fs
+  USING (player_id)
+GROUP BY
+  player_id
+;
+
+`Problem: Capital Gain/Loss
+Task: Write an SQL query to report the Capital gain/loss for each stock.
+Stocks table:
++---------------+-----------+---------------+--------+
+| stock_name    | operation | operation_day | price  |
++---------------+-----------+---------------+--------+
+| Leetcode      | Buy       | 1             | 1000   |
+| Corona Masks  | Buy       | 2             | 10     |
+| Leetcode      | Sell      | 5             | 9000   |
+| Handbags      | Buy       | 17            | 30000  |
+| Corona Masks  | Sell      | 3             | 1010   |
+| Corona Masks  | Buy       | 4             | 1000   |
+| Corona Masks  | Sell      | 5             | 500    |
+| Corona Masks  | Buy       | 6             | 1000   |
+| Handbags      | Sell      | 29            | 7000   |
+| Corona Masks  | Sell      | 10            | 10000  |
++---------------+-----------+---------------+--------+
+Result table:
++---------------+-------------------+
+| stock_name    | capital_gain_loss |
++---------------+-------------------+
+| Corona Masks  | 9500              |
+| Leetcode      | 8000              |
+| Handbags      | -23000            |
+`
+SELECT
+  stock_name,
+  SUM(IF(operation='Buy', -price, price)) capital_gain_loss
+FROM
+  Stocks
+GROUP BY
+  stock_name
+;
+`Problem:  All People Report to the Given Manager
+Task: Write an SQL query to find employee_id of all employees that directly or indirectly report their work to the head of the company. The indirect relation between managers will not exceed 3 managers as the company is small.
+Employees table:
++-------------+---------------+------------+
+| employee_id | employee_name | manager_id |
++-------------+---------------+------------+
+| 1           | Boss          | 1          |
+| 3           | Alice         | 3          |
+| 2           | Bob           | 1          |
+| 4           | Daniel        | 2          |
+| 7           | Luis          | 4          |
+| 8           | Jhon          | 3          |
+| 9           | Angela        | 8          |
+| 77          | Robert        | 1          |
++-------------+---------------+------------+
+Result table:
++-------------+
+| employee_id |
++-------------+
+| 2           |
+| 77          |
+| 4           |
+| 7           |
++-------------+
+`
+-- Join Approach (Faster) - Customized to 3 recursion depth
+SELECT
+  e1.employee_id
+FROM
+  Employees e1,
+  Employees e2,
+  Employees e3
+WHERE
+  e1.manager_id = e2.employee_id
+  and
+  e2.manager_id = e3.employee_id
+  AND
+  e3.manager_id = 3
+  AND
+  e1.employee_id != 1 -- Filtering out the boss himself!
+
+-- Recursive Approach (Any recursion depth )
+WITH RECURSIVE hierarchy AS (
+  SELECT employee_id FROM Employees WHERE manager_id = 1 AND employee_id != 1
+  UNION ALL
+  SELECT ee.employee_id FROM Employees ee JOIN hierarchy ht ON (ee.manager_id = ht.employee_id)
+)
+SELECT
+  *
+FROM
+  hierarchy;
+
+  -- Recursive Approach (Any recursion depth - but limiting to 3)
+  WITH RECURSIVE hierarchy AS (
+    SELECT employee_id, 1 recursion_depth FROM Employees WHERE manager_id = 1 AND employee_id != 1
+    UNION ALL
+    SELECT ee.employee_id, recursion_depth + 1 FROM Employees ee JOIN hierarchy ht ON (ee.manager_id = ht.employee_id)
+    WHERE recursion_depth < 3
+  )
+  SELECT
+    employee_id
+  FROM
+    hierarchy;
+
+`Problem: The Most Frequently Ordered Products for Each Customer
+Task: Write an SQL query to find the most frequently ordered product(s) for each customer. The result table should have the product_id and product_name for each customer_id who ordered at least one order. Return the result table in any order.
+Customers
++-------------+-------+
+| customer_id | name  |
++-------------+-------+
+| 1           | Alice |
+| 2           | Bob   |
+| 3           | Tom   |
+| 4           | Jerry |
+| 5           | John  |
++-------------+-------+
+Orders
++----------+------------+-------------+------------+
+| order_id | order_date | customer_id | product_id |
++----------+------------+-------------+------------+
+| 1        | 2020-07-31 | 1           | 1          |
+| 2        | 2020-07-30 | 2           | 2          |
+| 3        | 2020-08-29 | 3           | 3          |
+| 4        | 2020-07-29 | 4           | 1          |
+| 5        | 2020-06-10 | 1           | 2          |
+| 6        | 2020-08-01 | 2           | 1          |
+| 7        | 2020-08-01 | 3           | 3          |
+| 8        | 2020-08-03 | 1           | 2          |
+| 9        | 2020-08-07 | 2           | 3          |
+| 10       | 2020-07-15 | 1           | 2          |
++----------+------------+-------------+------------+
+Products
++------------+--------------+-------+
+| product_id | product_name | price |
++------------+--------------+-------+
+| 1          | keyboard     | 120   |
+| 2          | mouse        | 80    |
+| 3          | screen       | 600   |
+| 4          | hard disk    | 450   |
++------------+--------------+-------+
+Result table:
++-------------+------------+--------------+
+| customer_id | product_id | product_name |
++-------------+------------+--------------+
+| 1           | 2          | mouse        |
+| 2           | 1          | keyboard     |
+| 2           | 2          | mouse        |
+| 2           | 3          | screen       |
+| 3           | 3          | screen       |
+| 4           | 1          | keyboard     |
++-------------+------------+--------------+
+`
+WITH customer_orders AS (
+    SELECT
+        customer_id,
+        product_id,
+        DENSE_RANK() OVER(PARTITION BY customer_id ORDER BY purchase_cnt DESC) purchase_rnk
+    FROM (
+        SELECT
+            customer_id,
+            product_id,
+            COUNT(*) purchase_cnt
+        FROM
+            Orders
+        GROUP BY
+            customer_id, product_id
+    ) t
+)
+SELECT
+    customer_id,
+    product_id,
+    p.product_name
+FROM
+    customer_orders co
+    INNER JOIN
+    Products p
+    Using (product_id)
+WHERE
+    purchase_rnk = 1
+ORDER BY
+    customer_id, product_id
+;
+
+`Problem: Running Total for Different Genders
+Task: Write an SQL query to find the total score for each gender at each day. Order the result table by gender and day
+Scores table:
++-------------+--------+------------+--------------+
+| player_name | gender | day        | score_points |
++-------------+--------+------------+--------------+
+| Aron        | F      | 2020-01-01 | 17           |
+| Alice       | F      | 2020-01-07 | 23           |
+| Bajrang     | M      | 2020-01-07 | 7            |
+| Khali       | M      | 2019-12-25 | 11           |
+| Slaman      | M      | 2019-12-30 | 13           |
+| Joe         | M      | 2019-12-31 | 3            |
+| Jose        | M      | 2019-12-18 | 2            |
+| Priya       | F      | 2019-12-31 | 23           |
+| Priyanka    | F      | 2019-12-30 | 17           |
++-------------+--------+------------+--------------+
+Result table:
++--------+------------+-------+
+| gender | day        | total |
++--------+------------+-------+
+| F      | 2019-12-30 | 17    |
+| F      | 2019-12-31 | 40    |
+| F      | 2020-01-01 | 57    |
+| F      | 2020-01-07 | 80    |
+| M      | 2019-12-18 | 2     |
+| M      | 2019-12-25 | 13    |
+| M      | 2019-12-30 | 26    |
+| M      | 2019-12-31 | 29    |
+| M      | 2020-01-07 | 36    |
++--------+------------+-------+
+`
+SELECT
+    gender,
+    day,
+    SUM(score_points) OVER(PARTITION BY gender ORDER BY day) total
+FROM
+    Scores
+ORDER BY
+    gender, day
+;
+
+`Problem: Find the Start and End Number of Continuous Ranges
+Task: Write an SQL query to find the start and end number of continuous ranges in table Logs. Order the result table by start_id.
+Logs table:
++------------+
+| log_id     |
++------------+
+| 1          |
+| 2          |
+| 3          |
+| 7          |
+| 8          |
+| 10         |
++------------+
+Result table:
++------------+--------------+
+| start_id   | end_id       |
++------------+--------------+
+| 1          | 3            |
+| 7          | 8            |
+| 10         | 10           |
++------------+--------------+
+`
+WITH formatted_logs AS (
+  SELECT
+    log_id,
+    log_id - OVER(ORDER BY log_id) grouped
+  FROM
+    Logs
+)
+SELECT
+  MIN(log_id) start_id,
+  MAX(log_id) end_id
+FROM
+  formatted_logs
+GROUP BY
+  grouped
+ORDER BY
+  start_id, end_id
+;
+
+`Problem: Number of Calls Between Two Persons
+Task: Write an SQL query to report the number of calls and the total call duration between each pair of distinct persons (person1, person2) where person1 < person2. Return the result table in any order.
+`
+SELECT
+  LEAST(from_id, to_id) person1,
+  GREATEST(from_id, to_id) person2,
+  COUNT(*) call_count,
+  SUM(duration) total_duration
+FROM
+  Calls
+GROUP BY
+  person1, person2
+;
+
+`Problem: Team Scores in Football Tournament
+Task: Write an SQL query that selects the team_id, team_name and num_points of each team in the tournament after all described matches. Result table should be ordered by num_points (decreasing order). In case of a tie, order the records by team_id (increasing order).
+`
+WITH flattened_matches AS (
+    SELECT
+        team_id,
+        SUM(points_scored) num_points
+    FROM (
+        SELECT
+            host_team team_id,
+            SUM(IF(host_goals > guest_goals, 3, IF(host_goals = guest_goals, 1, 0))) points_scored
+        FROM
+            Matches
+        GROUP BY
+            team_id
+        UNION ALL
+        SELECT
+            guest_team team_id,
+            SUM(IF(guest_goals > host_goals, 3, IF(host_goals = guest_goals, 1, 0))) points_scored
+        FROM
+            Matches
+        GROUP BY
+            team_id
+        ) t_
+    GROUP BY
+        team_id
+)
+SELECT
+    t.team_id,
+    t.team_name,
+    COALESCE(fm.num_points, 0) num_points
+FROM
+    Teams t
+    LEFT JOIN
+    flattened_matches fm
+    USING (team_id)
+ORDER BY
+    num_points DESC, team_id
+;
+
+`Problem: Tree Node
+Task: Given a table tree, id is identifier of the tree node and p_id is its parent node's id. Write a query to print the node id and the type of the node. Sort your output by the node id.
++----+------+
+| id | p_id |
++----+------+
+| 1  | null |
+| 2  | 1    |
+| 3  | 1    |
+| 4  | 2    |
+| 5  | 2    |
++----+------+
++----+------+
+| id | Type |
++----+------+
+| 1  | Root |
+| 2  | Inner|
+| 3  | Leaf |
+| 4  | Leaf |
+| 5  | Leaf |
++----+------+
+`
+WITH processed_tree AS (
+    SELECT
+        parent.id,
+        parent.p_id,
+        COUNT(child.id) children_count
+    FROM
+        tree parent
+        LEFT JOIN
+        tree child
+        ON (
+            parent.id = child.p_id
+        )
+    GROUP BY
+        id, p_id
+)
+SELECT
+    id,
+    IF(p_id IS NULL, 'Root', IF(children_count=0, 'Leaf', 'Inner')) Type
+FROM
+    processed_tree
+ORDER BY
+    id
+;
+
+`Problem:
+Task:
+`
 `Problem:
 Task:
 `
 
-
 `Problem:
 Task:
 `
-
-
-`Problem:
-Task:
-`
-
-
-`Problem:
-Task:
-`
-
-`Problem:
-Task:
-`
-
-`Problem:
-Task:
-`
-
 `Problem:
 Task:
 `

@@ -125,7 +125,8 @@ data = [("Banana",1000,"USA"), ("Carrots",1500,"USA"), ("Beans",1600,"USA"), \
       ("Banana",2000,"Canada"),("Carrots",2000,"Canada"),("Beans",2000,"Mexico")]
 columns= ["Product","Amount","Country"]
 df = spark.createDataFrame(data = data, schema = columns)
-pivotDf = df.groupBy('Product').pivot('Country').sum('Amount')
+pivotDf = df.groupBy('Product')
+        .pivot('Country').sum('Amount')
 # Aggregated Pivot
 pivotDF = df.groupBy("Product","Country") \
       .sum("Amount") \

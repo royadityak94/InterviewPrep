@@ -778,6 +778,395 @@ much more expensive and imfeasible (almost 2x speedup). But, if we did, we do no
 tl.subtasks_count >= tl.subtask_id in our where clause!!!
 `
 
+`Problem: Transactions across Visits (Confusing Requirement)
+Task: Transaction count aggregation across user visits
+Source: https://leetcode.com/problems/number-of-transactions-per-visit/
+Visits table:
++---------+------------+
+| user_id | visit_date |
++---------+------------+
+| 1       | 2020-01-01 |
+| 2       | 2020-01-02 |
+| 12      | 2020-01-01 |
+| 19      | 2020-01-03 |
+| 1       | 2020-01-02 |
+| 2       | 2020-01-03 |
+| 1       | 2020-01-04 |
+| 7       | 2020-01-11 |
+| 9       | 2020-01-25 |
+| 8       | 2020-01-28 |
++---------+------------+
+Transactions table:
++---------+------------------+--------+
+| user_id | transaction_date | amount |
++---------+------------------+--------+
+| 1       | 2020-01-02       | 120    |
+| 2       | 2020-01-03       | 22     |
+| 7       | 2020-01-11       | 232    |
+| 1       | 2020-01-04       | 7      |
+| 9       | 2020-01-25       | 33     |
+| 9       | 2020-01-25       | 66     |
+| 8       | 2020-01-28       | 1      |
+| 9       | 2020-01-25       | 99     |
++---------+------------------+--------+
+Result table:
++--------------------+--------------+
+| transactions_count | visits_count |
++--------------------+--------------+
+| 0                  | 4            |
+| 1                  | 5            |
+| 2                  | 0            |
+| 3                  | 1            |
++--------------------+--------------+
+`
+WITH user_visits AS (
+    SELECT
+        v.user_id user_id,
+        visit_date,
+        COUNT(t.transaction_date) transaction_count
+    FROM
+        Visits v
+    LEFT JOIN
+        Transactions t
+    ON
+        v.user_id = t.user_id
+        AND
+        v.visit_date = t.transaction_date
+    GROUP BY
+        1, 2
+),
+row_nums AS (
+    SELECT
+        ROW_NUMBER() OVER() rn
+    FROM
+        Transactions
+    UNION
+        SELECT 0
+)
+
+SELECT
+    row_nums.rn transactions_count,
+    COUNT(user_visits.transaction_count) visits_count
+FROM
+    row_nums
+    LEFT JOIN
+    user_visits
+    ON
+        transaction_count = rn
+WHERE
+    rn <= (SELECT max(transaction_count) FROM user_visits)
+GROUP BY
+    rn
+ORDER BY
+    1
+;
+
+`Problem: Total Sales Amount by Year
+Task: Write an SQL query to report the Total sales amount of each item for each year, with corresponding product name, product_id, product_name and report_year. Dates of the sales years are between 2018 to 2020. Return the result table ordered by product_id and report_year.
+Product table:
++------------+--------------+
+| product_id | product_name |
++------------+--------------+
+| 1          | LC Phone     |
+| 2          | LC T-Shirt   |
+| 3          | LC Keychain  |
++------------+--------------+
+Sales table:
++------------+--------------+-------------+---------------------+
+| product_id | period_start | period_end  | average_daily_sales |
++------------+--------------+-------------+---------------------+
+| 1          | 2019-01-25   | 2019-02-28  | 100                 |
+| 2          | 2018-12-01   | 2020-01-01  | 10                  |
+| 3          | 2019-12-01   | 2020-01-31  | 1                   |
++------------+--------------+-------------+---------------------+
+Result table:
++------------+--------------+-------------+--------------+
+| product_id | product_name | report_year | total_amount |
++------------+--------------+-------------+--------------+
+| 1          | LC Phone     |    2019     | 3500         |
+| 2          | LC T-Shirt   |    2018     | 310          |
+| 2          | LC T-Shirt   |    2019     | 3650         |
+| 2          | LC T-Shirt   |    2020     | 10           |
+| 3          | LC Keychain  |    2019     | 31           |
+| 3          | LC Keychain  |    2020     | 31           |
++------------+--------------+-------------+--------------+
+`
+-- Master Calendar - across min start date, max end date
+WITH RECURSIVE daily_sales AS (
+  SELECT MIN(period_start) report_date FROM Sales
+  UNION
+  SELECT DATE_ADD(report_date, INTERVAL 1 DAY) report_date FROM daily_sales
+  WHERE report_date <= ALL (SELECT MAX(period_end) FROM Sales)
+)
+
+SELECT
+  s.product_id,
+  p.product_name,
+  CAST(year(ds.report_date) AS NCHAR) report_year,
+  SUM(s.average_daily_sales) total_amount
+FROM
+  Sales s
+JOIN
+  Product p
+  ON (s.product_id = p.product_id)
+JOIN
+  daily_sales ds
+  ON (ds.report_date BETWEEN s.period_start AND s.period_end)
+GROUP BY
+  1, 2, 3
+ORDER BY
+  1, 2, 3
+;
+
+`Problem: Market Analysis II
+Task: Report if the second item sold by a seller, is his favorite item.
+Users table:
++---------+------------+----------------+
+| user_id | join_date  | favorite_brand |
++---------+------------+----------------+
+| 1       | 2019-01-01 | Lenovo         |
+| 2       | 2019-02-09 | Samsung        |
+| 3       | 2019-01-19 | LG             |
+| 4       | 2019-05-21 | HP             |
++---------+------------+----------------+
+Orders table:
++----------+------------+---------+----------+-----------+
+| order_id | order_date | item_id | buyer_id | seller_id |
++----------+------------+---------+----------+-----------+
+| 1        | 2019-08-01 | 4       | 1        | 2         |
+| 2        | 2019-08-02 | 2       | 1        | 3         |
+| 3        | 2019-08-03 | 3       | 2        | 3         |
+| 4        | 2019-08-04 | 1       | 4        | 2         |
+| 5        | 2019-08-04 | 1       | 3        | 4         |
+| 6        | 2019-08-05 | 2       | 2        | 4         |
++----------+------------+---------+----------+-----------+
+Items table:
++---------+------------+
+| item_id | item_brand |
++---------+------------+
+| 1       | Samsung    |
+| 2       | Lenovo     |
+| 3       | LG         |
+| 4       | HP         |
++---------+------------+
+Result table:
++-----------+--------------------+
+| seller_id | 2nd_item_fav_brand |
++-----------+--------------------+
+| 1         | no                 |
+| 2         | yes                |
+| 3         | yes                |
+| 4         | no                 |
++-----------+--------------------+
+`
+WITH ranked_orders AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER(PARTITION BY seller_id ORDER BY order_date) transaction_rank
+  FROM
+    Orders
+),
+transaction_details AS (
+  SELECT
+    ro.seller_id,
+    i.item_brand
+  FROM
+    ranked_orders ro
+    LEFT JOIN
+    Items i
+    ON (ro.item_id = i.item_id)
+  WHERE
+    ro.transaction_rank = 2
+)
+SELECT
+  u.user_id seller_id,
+  COALESCE(IF(td.item_brand = u.favorite_brand, 'yes', NULL), 'no') 2nd_item_fav_brand
+FROM
+  Users u
+  LEFT JOIN
+  transaction_details td
+  ON (u.user_id = td.seller_id)
+ORDER BY
+  1
+;
+
+`Problem: Report Contiguous Dates
+Task: Write an SQL query to generate a report of period_state for each continuous interval of days in the period from 2019-01-01 to 2019-12-31.
+period_state is 'failed' if tasks in this interval failed or 'succeeded' if tasks in this interval succeeded. Interval of days are retrieved as start_date and end_date. Order result by start_date.
+Failed table:
++-------------------+
+| fail_date         |
++-------------------+
+| 2018-12-28        |
+| 2018-12-29        |
+| 2019-01-04        |
+| 2019-01-05        |
++-------------------+
+Succeeded table:
++-------------------+
+| success_date      |
++-------------------+
+| 2018-12-30        |
+| 2018-12-31        |
+| 2019-01-01        |
+| 2019-01-02        |
+| 2019-01-03        |
+| 2019-01-06        |
++-------------------+
+Result table:
++--------------+--------------+--------------+
+| period_state | start_date   | end_date     |
++--------------+--------------+--------------+
+| succeeded    | 2019-01-01   | 2019-01-03   |
+| failed       | 2019-01-04   | 2019-01-05   |
+| succeeded    | 2019-01-06   | 2019-01-06   |
++--------------+--------------+--------------+
+`
+WITH aggregated_view AS (
+    SELECT
+        fail_date reporting_date,
+        'failed' period_state,
+        DAYOFYEAR(fail_date) - ROW_NUMBER() OVER(ORDER BY fail_date) AS period_group
+    FROM
+        Failed
+    WHERE
+        fail_date BETWEEN '2019-01-01' AND '2019-12-31'
+    UNION
+    SELECT
+        success_date reporting_date,
+        'succeeded' period_state,
+        DAYOFYEAR(success_date) - ROW_NUMBER() OVER(ORDER BY success_date) AS period_group
+    FROM
+        Succeeded
+    WHERE
+        success_date BETWEEN '2019-01-01' AND '2019-12-31'
+)
+SELECT
+    period_state,
+    MIN(reporting_date) start_date,
+    MAX(reporting_date) end_date
+FROM
+    aggregated_view
+GROUP BY
+    period_state, period_group
+ORDER BY
+    start_date
+;
+
+
+`Problem: Students Report By Geography (Pivot Table)
+Task: Pivot the continent column in this table so that each name is sorted alphabetically and displayed underneath its corresponding continent. The output headers should be America, Asia and Europe respectively. It is guaranteed that the student number from America is no less than either Asia or Europe.
+student
+| name   | continent |
+|--------|-----------|
+| Jack   | America   |
+| Pascal | Europe    |
+| Xi     | Asia      |
+| Jane   | America   |
+output:
+| America | Asia | Europe |
+|---------|------|--------|
+| Jack    | Xi   | Pascal |
+| Jane    |      |        |
+`
+WITH ranked_student AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER(PARTITION BY continent ORDER BY name) ordering
+  FROM
+    student
+)
+SELECT
+  MAX(CASE WHEN continent = 'America' THEN name END) America,
+  MAX(CASE WHEN continent = 'Asia' THEN name END) Asia,
+  MAX(CASE WHEN continent = 'Europe' THEN name END) Europe
+FROM
+  ranked_student
+GROUP BY
+  ordering
+
+
+`Problem: Follow-up Question [Students Report By Geography]
+Task: If it is unknown which continent has the most students, can you write a query to generate the student report?
+Answer Source: https://leetcode.com/problems/students-report-by-geography/discuss/672308/(_)-MySQL-Solutions%3A-WINDOW-variables-(Follow-up-answer)
+`
+SELECT
+        CASE WHEN continent = 'America' THEN @r1 := @r1 + 1
+             WHEN continent = 'Asia'    THEN @r2 := @r2 + 1
+             WHEN continent = 'Europe'  THEN @r3 := @r3 + 1 END row_id,
+        CASE WHEN continent = 'America' THEN name END America,
+        CASE WHEN continent = 'Asia'    THEN name END Asia,
+        CASE WHEN continent = 'Europe'  THEN name END Europe
+FROM student, (SELECT @r1 := 0, @r2 := 0, @r3 := 0) tmp
+ORDER BY name
+
+`Problem: User Purchase Platform
+Task: Write an SQL query to find the total number of users and the total amount spent using mobile only, desktop only and both mobile and desktop together for each date.
+Spending table:
++---------+------------+----------+--------+
+| user_id | spend_date | platform | amount |
++---------+------------+----------+--------+
+| 1       | 2019-07-01 | mobile   | 100    |
+| 1       | 2019-07-01 | desktop  | 100    |
+| 2       | 2019-07-01 | mobile   | 100    |
+| 2       | 2019-07-02 | mobile   | 100    |
+| 3       | 2019-07-01 | desktop  | 100    |
+| 3       | 2019-07-02 | desktop  | 100    |
++---------+------------+----------+--------+
+Result table:
++------------+----------+--------------+-------------+
+| spend_date | platform | total_amount | total_users |
++------------+----------+--------------+-------------+
+| 2019-07-01 | desktop  | 100          | 1           |
+| 2019-07-01 | mobile   | 100          | 1           |
+| 2019-07-01 | both     | 200          | 1           |
+| 2019-07-02 | desktop  | 100          | 1           |
+| 2019-07-02 | mobile   | 100          | 1           |
+| 2019-07-02 | both     | 0            | 0           |
++------------+----------+--------------+-------------+
+`
+WITH master_calendar AS (
+  SELECT DISTINCT spend_date, 'desktop' platform FROM Spending
+  UNION
+  SELECT DISTINCT spend_date, 'mobile' platform FROM Spending
+  UNION
+  SELECT DISTINCT spend_date, 'both' platform FROM Spending
+),
+processed_spending AS (
+  SELECT
+    user_id,
+    spend_date,
+    IF(mobile_amount > 0, IF(desktop_amount > 0, 'both', 'mobile'), 'desktop') platform,
+    (mobile_amount + desktop_amount) amount
+  FROM (
+    SELECT
+      user_id,
+      spend_date,
+      SUM(CASE WHEN platform='mobile' THEN amount ELSE 0 END) mobile_amount,
+      SUM(CASE WHEN platform='desktop' THEN amount ELSE 0 END) desktop_amount
+    FROM
+      Spending
+    GROUP BY
+      user_id, spend_date
+  ) t
+)
+SELECT
+  mc.spend_date,
+  mc.platform,
+  IFNULL(SUM(ps.amount), 0) total_amount,
+  COUNT(ps.user_id) total_users
+FROM
+  master_calendar mc
+LEFT JOIN
+  processed_spending ps
+  ON (
+    mc.spend_date = ps.spend_date
+    AND
+    mc.platform = ps.platform
+  )
+GROUP BY
+  spend_date, platform
+;
 
 `Problem:
 Task:
@@ -786,6 +1175,43 @@ Task:
 `Problem:
 Task:
 `
+
+`Problem:
+Task:
+`
+
+`Problem:
+Task:
+`
+
+
+`Problem:
+Task:
+`
+
+
+`Problem:
+Task:
+`
+
+
+`Problem:
+Task:
+`
+
+
+`Problem:
+Task:
+`
+
+`Problem:
+Task:
+`
+
+`Problem:
+Task:
+`
+
 `Problem:
 Task:
 `
