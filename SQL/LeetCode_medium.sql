@@ -739,9 +739,39 @@ ORDER BY
     customer_id
 ;
 
-`Problem:
-Task:
+`Problem: Last Person to Fit in the Elevator
+Task: Write an SQL query to find the person_name of the last person who will fit in the elevator without exceeding the weight limit. It is guaranteed that the person who is first in the queue can fit in the elevator. The maximum weight the elevator can hold is 1000.
+Queue table
++-----------+-------------------+--------+------+
+| person_id | person_name       | weight | turn |
++-----------+-------------------+--------+------+
+| 5         | George Washington | 250    | 1    |
+| 3         | John Adams        | 350    | 2    |
+| 6         | Thomas Jefferson  | 400    | 3    |
+| 2         | Will Johnliams    | 200    | 4    |
+| 4         | Thomas Jefferson  | 175    | 5    |
+| 1         | James Elephant    | 500    | 6    |
++-----------+-------------------+--------+------+
 `
+with ordered_queue AS (
+    SELECT
+        person_name,
+        turn,
+        SUM(weight) OVER(ORDER BY turn) running_total
+    FROM
+        Queue
+
+)
+SELECT
+    person_name
+FROM
+    ordered_queue
+WHERE
+    running_total <= 1000
+ORDER BY
+    turn DESC
+LIMIT 1
+;
 
 `Problem:
 Task:
