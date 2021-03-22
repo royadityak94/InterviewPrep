@@ -773,22 +773,198 @@ ORDER BY
 LIMIT 1
 ;
 
-`Problem:
-Task:
+`Problem: Managers with at Least 5 Direct Reports
+Task: Given the Employee table, write a SQL query that finds out managers with at least 5 direct report.
+Employee
++------+----------+-----------+----------+
+|Id    |Name 	  |Department |ManagerId |
++------+----------+-----------+----------+
+|101   |John 	  |A 	      |null      |
+|102   |Dan 	  |A 	      |101       |
+|103   |James 	  |A 	      |101       |
+|104   |Amy 	  |A 	      |101       |
+|105   |Anne 	  |A 	      |101       |
+|106   |Ron 	  |B 	      |101       |
++------+----------+-----------+----------+
 `
-`Problem:
-Task:
-`
-`Problem:
-Task:
-`
-`Problem:
-Task:
-`
+SELECT
+  ma.Name
+FROM
+  Employee em
+  LEFT JOIN
+  Employee ma
+  ON (
+    em.ManagerId = ma.id
+  )
+GROUP BY
+  ma.Id
+HAVING
+  ma.Name IS NOT NULL
+  AND COUNT(DISTINCT em.Id) >= 5;
 
-`Problem:
-Task:
+`Problem: Active Businesses (Good one!!!)
+Task: Write an SQL query to find all active businesses. An active business is a business that has more than one event type with occurences greater than the average occurences of that event type among all businesses.
+Events table:
++-------------+------------+------------+
+| business_id | event_type | occurences |
++-------------+------------+------------+
+| 1           | reviews    | 7          |
+| 3           | reviews    | 3          |
+| 1           | ads        | 11         |
+| 2           | ads        | 7          |
+| 3           | ads        | 6          |
+| 1           | page views | 3          |
+| 2           | page views | 12         |
++-------------+------------+------------+
+Result table:
++-------------+
+| business_id |
++-------------+
+| 1           |
++-------------+
 `
+WITH event_summary AS (
+    SELECT
+        event_type,
+        AVG(occurences) average_occurences
+    FROM
+        Events
+    GROUP BY
+        event_type
+)
+SELECT
+    ev.business_id
+FROM
+    Events ev
+    LEFT JOIN
+    event_summary es
+    USING (event_type)
+WHERE
+    ev.occurences > es.average_occurences
+GROUP BY
+    ev.business_id
+HAVING
+    COUNT(DISTINCT ev.event_type) > 1
+;
+
+`Problem: Second Degree Follower
+Task: In facebook, there is a follow table with two columns: followee, follower. Please write a sql query to get the amount of each follower’s follower if he/she has one.
++-------------+------------+
+| followee    | follower   |
++-------------+------------+
+|     A       |     B      |
+|     B       |     C      |
+|     B       |     D      |
+|     D       |     E      |
++-------------+------------+
+should output:
++-------------+------------+
+| follower    | num        |
++-------------+------------+
+|     B       |  2         |
+|     D       |  1         |
++-------------+------------+
+`
+SELECT
+  parent.follower,
+  COUNT(DISTINCT child.follower) num
+FROM
+  follow parent,
+  follow child
+WHERE
+  parent.follower = child.followee
+GROUP BY
+  parent
+ORDER BY
+  parent
+;
+
+`Problem: Product Price at a Given Date
+Task: Write an SQL query to find the prices of all products on 2019-08-16. Assume the price of all products before any change is 10.
+Products table:
++------------+-----------+-------------+
+| product_id | new_price | change_date |
++------------+-----------+-------------+
+| 1          | 20        | 2019-08-14  |
+| 2          | 50        | 2019-08-14  |
+| 1          | 30        | 2019-08-15  |
+| 1          | 35        | 2019-08-16  |
+| 2          | 65        | 2019-08-17  |
+| 3          | 20        | 2019-08-18  |
++------------+-----------+-------------+
+Result table:
++------------+-------+
+| product_id | price |
++------------+-------+
+| 2          | 50    |
+| 1          | 35    |
+| 3          | 10    |
++------------+-------+
+`
+with price_current_day AS (
+    SELECT
+        product_id,
+        new_price price,
+        ROW_NUMBER() OVER(PARTITION BY product_id ORDER BY change_date DESC) row_rnk
+    FROM
+        Products
+    WHERE
+        change_date <= '2019-08-16'
+)
+SELECT
+    p1.product_id,
+    COALESCE(p2.price, 10) price
+FROM
+    (SELECT DISTINCT product_id FROM Products) p1
+    LEFT JOIN
+    price_current_day p2
+    USING (product_id)
+WHERE
+    p2.row_rnk = 1
+    OR p2.row_rnk IS NULL
+;
+
+`Problem: Highest Grade For Each Student
+Task: Write a SQL query to find the highest grade with its corresponding course for each student. In case of a tie, you should find the course with the smallest course_id. The output must be sorted by increasing student_id.
+Enrollments table:
++------------+-------------------+
+| student_id | course_id | grade |
++------------+-----------+-------+
+| 2          | 2         | 95    |
+| 2          | 3         | 95    |
+| 1          | 1         | 90    |
+| 1          | 2         | 99    |
+| 3          | 1         | 80    |
+| 3          | 2         | 75    |
+| 3          | 3         | 82    |
++------------+-----------+-------+
+Result table:
++------------+-------------------+
+| student_id | course_id | grade |
++------------+-----------+-------+
+| 1          | 2         | 99    |
+| 2          | 2         | 95    |
+| 3          | 3         | 82    |
++------------+-----------+-------+
+`
+with enrollment_ranked AS (
+    SELECT
+    *,
+    ROW_NUMBER() OVER(PARTITION BY student_id ORDER BY grade DESC, course_id) studentwise_rank
+    FROM
+        Enrollments
+)
+SELECT
+    student_id,
+    course_id,
+    grade
+FROM
+    enrollment_ranked
+WHERE
+    studentwise_rank = 1
+ORDER BY
+    student_id
+;
 `Problem:
 Task:
 `
