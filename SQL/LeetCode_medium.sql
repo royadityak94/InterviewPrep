@@ -965,9 +965,28 @@ WHERE
 ORDER BY
     student_id
 ;
-`Problem:
-Task:
+`Problem: Shortest Distance in a Plane
+Task: Write a query to find the shortest distance between these points rounded to 2 decimals. The shortest distance is 1.00 from point (-1,-1) to (-1,2). So the output should be:
+point_2d
+| x  | y  |
+|----|----|
+| -1 | -1 |
+| 0  | 0  |
+| -1 | -2 |
+| shortest |
+|----------|
+| 1.00     |
 `
+SELECT
+  ROUND(MIN(SQRT(POW(p2.x-p1.x, 2) + POW(p2.y-p1.y, 2)))) shortest
+FROM 
+  point_2d p1,
+  point_2d p2
+WHERE
+  p1.x < p2.x
+  OR (p1.x = p2.x AND p1.y < p2.y)
+;
+
 `Problem:
 Task:
 `
