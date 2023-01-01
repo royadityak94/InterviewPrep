@@ -1,9 +1,11 @@
 '''Hashmap Implementations
     Hashmap implementations in python
 '''
+
 import mmh3
 import math
 
+# Added comment to the ListNode class
 class ListNode: 
     def __init__(self, key, value):
         self.key = key
