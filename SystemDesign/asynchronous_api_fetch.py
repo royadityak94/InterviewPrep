@@ -6,6 +6,7 @@ import httpx
 import asyncio
 import pandas as pd
 
+# Added comments to the parsed recorder
 def format_parsed_record(input_json): 
     formatted_dict = {
         'name': input_json['name'],
