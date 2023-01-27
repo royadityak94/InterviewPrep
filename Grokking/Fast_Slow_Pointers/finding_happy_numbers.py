@@ -1,5 +1,4 @@
 def find_happy_number(num):
-    # TODO: Write your code here
     slow = fast = num
     while True:
         slow = sum_of_squares(slow)

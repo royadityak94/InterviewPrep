@@ -38,7 +38,7 @@ class BinaryTree:
         self.invert_binary_tree(root.left)
         self.invert_binary_tree(root.right)
 
-        root.left, root.right = root.left, root.right
+        root.left, root.right = root.right, root.left
 
 def main():
     tree = BinaryTree(12)
