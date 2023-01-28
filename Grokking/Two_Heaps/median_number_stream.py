@@ -13,7 +13,6 @@ class MedianOfAStream:
         self.total = 0
 
     def insert_num(self, num):
-        # TODO: Write your code here
         if (not self.maxHeap) or (-self.maxHeap[0] >= num):
             heappush(self.maxHeap, -num)
         else:
