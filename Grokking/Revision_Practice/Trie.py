@@ -21,6 +21,7 @@ class Trie:
         for ch in word:
             if ch not in head.children:
                 head.children[ch] = TrieNode()
+            
             head = head.children[ch]
         head.is_word = True 
     
@@ -39,6 +40,7 @@ if __name__ == '__main__':
     root = Trie()
     for word in words_to_insert:
         root.insert(word)
+
     
     # Search for words 
     words_to_search = words_to_insert + ['cat', 'applez', 'appdz', 'andryz', 'zman']
