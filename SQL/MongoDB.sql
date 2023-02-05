@@ -288,8 +288,7 @@ query:University =  For 'usal', bring in courses under universities collection i
         }}
     ])
 }
-`Problem: Total # of students belonging to each university, sorted by totalalumni(desc)
-`
+`Problem: Total # of students belonging to each university, sorted by totalalumni(desc)`
 {
     db.universities.aggregate([
         {$unwind: "$students"}, 
@@ -297,3 +296,121 @@ query:University =  For 'usal', bring in courses under universities collection i
         {$sort: {"totalalumni": -1}}
     ]).pretty
 }
+
+`Recap of available methods
+1. {"distinctColumns": {$addToSet: "$colName"}} -- creates unique set that can be used to achieve distinct or count distinct
+2. {"countDistinct" : {$size: {"$distinctColumns"}}} -- count distinct on columns
+3. {$addFields: {"newFieldName1": "$columnName1", "newFieldName2": "$columnName2"}}
+4. $dateToString: {
+    "date": "$dateColumn", 
+    "format": "%Y-%m-%d"
+}
+5. {$sortbyCount: "$columnName"} $ Group by fieldname, COUNT(*)
+6. $max, $min, $avg, $sum, $push, $pop
+`
+
+`Bucket Problem: Frequency Distribution`
+
+db.DailyRainFall.aggregate([
+    {$bucket: {
+        "groupBy": "$groupColumnName",
+        "boundaries": [],
+        "default": "above/below (x, y)", -- For values outside of that bucket, where to put them
+        "output": {"$count": {"$score": 1}} -- Aggregate means, i.e, count
+    }
+    }
+])
+
+`Facets: 
+    Concept
+    ----
+    Running muliple aggregated pipeline over same dcoument or output of previous pipeline 
+    (all stages are processed just one over prev stage or input document)
+`
+`Example1: 
+    Two aggregated views over Universities data: "Counting Levels" and "Years with less students" (top 10)
+`
+db.Universities.aggregate([
+    {$match: {"name": {"$ne": null}}}, 
+    {$lookup: {
+        "from": "courses", 
+        "localField": "name", 
+        "foreignField": "university",
+        "as": "courses"
+    }}, 
+    {$facet: {
+        "CountingLevels": [
+            {$unwind: "$courses"}, 
+            {$sortByCount: "$courses.level"}
+        ], 
+        "YearsWithLessStudents": [
+            {$unwind: "$students"}, 
+            {$project: {"_id": 0, "students": 1}},
+            {$sort: {"students.number": 1}}, 
+            {$limit: 10}
+        ]
+    }}
+])
+
+`Example2: 
+    From DailyRainFall view, get aggregated views as: 
+        "Month Year", "Year", "Month", "Total"
+    Sort: (Ascending)
+`
+
+db.DailyRainFall.aggregate([
+    {$addFields: {
+        "Month": {"$month": "$Date"},
+        "Year": {"$year": "$Date"},
+        "MonthYear": {
+            "$dateToString": {
+                "format": "%m-%Y",
+                "date": "$date"
+            }
+        }
+    }}, 
+    {$facet: {
+        "Total": {
+            "$group": {"_id": null}, 
+            "averageRainFall": {"$avg": "$Rainfall"},
+            "maximumRain": {"$max": "$Rainfall"}, 
+            "totalRain": {"sum": "$Rainfall"}
+        }, 
+        "Monthly": [{
+            "$group": {"_id": "$Month"}, 
+            "averageRainFall": {"$avg": "$Rainfall"},
+            "maximumRain": {"$max": "$Rainfall"}, 
+            "totalRain": {"sum": "$Rainfall"}
+        }, {"$sort": {"$_id": 1}}] -- Sort by month
+        "Year": [
+            "$group": {"_id": "$Year"}, 
+            "averageRainFall": {"$avg": "$Rainfall"},
+            "maximumRain": {"$max": "$Rainfall"}, 
+            "totalRain": {"sum": "$Rainfall"}
+        }, {"$sort": {"$_id": 1}}] -- Sort by year
+        "MonthYear": [
+            "$group": {"_id": "$MonthYear"}, 
+            "averageRainFall": {"$avg": "$Rainfall"},
+            "maximumRain": {"$max": "$Rainfall"}, 
+            "totalRain": {"sum": "$Rainfall"}
+        }, {"$sort": {"$_id": 1}}] -- Sort by monthyear
+    }}
+])
+
+`Admin Shell
+`
+mongo --host <host_name> --port <port_name> -u <user> -p <password>
+mongo "mongodb://host:port" -u "" - p ""
+show dbs -- all databases
+db -- current database 
+use db -- use current database 
+show collection
+
+db.createCollecion({})
+
+db.col.stats()
+db.col.storageSize()
+db.col.totalIndexSize()
+db.col.totalSize()
+db.col.validate({"full": true})
+db.col.renameCollection("new_collection_name", true) -- true: drops the collection name 'new_collection_name' if it exists
